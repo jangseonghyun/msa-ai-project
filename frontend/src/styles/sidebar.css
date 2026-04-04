@@ -1,0 +1,23 @@
+.sidebar {
+  width: 220px;
+  background: #1f2a40;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  padding: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  background: #162036;
+}
+
+.menu div {
+  padding: 15px;
+  cursor: pointer;
+}
+
+.menu div:hover {
+  background: #2e3b5a;
+}
