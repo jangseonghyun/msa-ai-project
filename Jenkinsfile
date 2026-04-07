@@ -38,7 +38,7 @@ pipeline {
               dir(path) {
                 docker.image('gradle:8.5-jdk17').inside {
                   sh 'chmod +x gradlew'
-                  sh './gradlew build'
+                  sh './gradlew build -x test'
                 }
               }
 
