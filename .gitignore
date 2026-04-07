@@ -80,3 +80,5 @@ jenkins_home/
 *.pid
 *.seed
 *.lock
+
+!**/gradle/wrapper/gradle-wrapper.jar
