@@ -132,7 +132,7 @@ services:
       - "5000:5000"
       - "9600:9600"
     volumes:
-      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash:/usr/share/logstash/pipeline
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
