@@ -1,13 +1,17 @@
 package com.project.auth.service;
 
+import com.project.auth.dto.domain.AuthEventType;
+import com.project.auth.dto.event.AuthEvent;
 import com.project.auth.dto.request.AuthRequest;
 import com.project.auth.dto.response.MeResponse;
 import com.project.auth.entity.AuthToken;
 import com.project.auth.entity.User;
 import com.project.auth.exception.AuthException;
+import com.project.auth.kafka.KafkaProducerService;
 import com.project.auth.repository.AuthTokenRepository;
 import com.project.auth.repository.UserRepository;
 import com.project.auth.security.JwtProvider;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +24,14 @@ public class AuthService {
     private final AuthTokenRepository authTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final KafkaProducerService kafkaProducerService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider, AuthTokenRepository authTokenRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider, AuthTokenRepository authTokenRepository, KafkaProducerService kafkaProducerService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
         this.authTokenRepository = authTokenRepository;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     public boolean isDuplicate(String userId) {
@@ -45,9 +51,27 @@ public class AuthService {
         user.setUserId(request.getId());
         user.setPasswordHash(hashed);
 
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
 
-        return true;
+            kafkaProducerService.send(
+                    new AuthEvent("auth-service", AuthEventType.SIGNUP_SUCCESS.name(), request.getId(), AuthEventType.SIGNUP_SUCCESS.getDescription())
+            );
+
+            return true;
+        } catch(DataIntegrityViolationException e) {
+            kafkaProducerService.send(
+                    new AuthEvent("auth-service", AuthEventType.SIGNUP_FAIL.name(), request.getId(), AuthEventType.SIGNUP_FAIL.getDescription())
+            );
+
+            return false;
+        } catch(Exception e) {
+            kafkaProducerService.send(
+                    new AuthEvent("auth-service", AuthEventType.SIGNUP_FAIL.name(), request.getId(), AuthEventType.SIGNUP_FAIL.getDescription())
+            );
+
+            return false;
+        }
     }
 
     // 로그인

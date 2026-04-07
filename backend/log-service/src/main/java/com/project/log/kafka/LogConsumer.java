@@ -6,19 +6,15 @@ import com.project.log.repository.LogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor
 public class LogConsumer {
 
-    private final ObjectMapper objectMapper;
     private final LogRepository logRepository;
 
-    @KafkaListener(topics = "log-topic")
-    public void consume(String message) throws Exception {
-
-        LogEventDto dto = objectMapper.readValue(message, LogEventDto.class);
+    @KafkaListener(topics = "log-topic", groupId ="log-group")
+    public void consume(LogEventDto dto) throws Exception {
 
         LogEntity entity = new LogEntity();
         entity.setServiceName(dto.getServiceName());
@@ -27,7 +23,5 @@ public class LogConsumer {
         entity.setMessage(dto.getMessage());
 
         logRepository.save(entity);
-
-        System.out.println("로그 저장 완료: " + dto.getMessage());
     }
 }

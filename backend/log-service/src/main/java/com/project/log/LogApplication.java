@@ -1,4 +1,4 @@
-package com.project.log.log;
+package com.project.log;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
