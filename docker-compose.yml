@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
 
   nginx:
@@ -14,7 +16,19 @@ services:
     ports:
       - "8000:8000"
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 8000
+
+      SPRING_CLOUD_GATEWAY_ROUTES_0_ID: auth-service
+      SPRING_CLOUD_GATEWAY_ROUTES_0_URI: http://auth-service:8080
+      SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0: Path=/auth/**
+
+      SPRING_CLOUD_GATEWAY_ROUTES_1_ID: doc-service
+      SPRING_CLOUD_GATEWAY_ROUTES_1_URI: http://doc-service:8081
+      SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0: Path=/doc/**
+
+      SPRING_CLOUD_GATEWAY_ROUTES_2_ID: log-service
+      SPRING_CLOUD_GATEWAY_ROUTES_2_URI: http://log-service:8082
+      SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0: Path=/log/**
     depends_on:
       - auth-service
       - doc-service
@@ -23,40 +37,75 @@ services:
   auth-service:
     build: ./backend/auth-service
     container_name: auth-service
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      DB_URL: ${AUTH_DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
-      - postgres
+      - auth_postgres
       - kafka
+    environment:
+      SERVER_PORT: 8080
+
+      SPRING_DATASOURCE_URL: ${AUTH_DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: true
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+      SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_HEADERS: "false"
+      SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
+      SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.springframework.kafka.support.serializer.JsonSerializer
 
   doc-service:
     build: ./backend/doc-service
     container_name: doc-service
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      DB_URL: ${DOC_DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
-      - doc-postgres
+      - doc_postgres
       - kafka
+    environment:
+      SERVER_PORT: 8081
+
+      SPRING_DATASOURCE_URL: ${DOC_DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: true
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+      SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_HEADERS: "false"
+      SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
+      SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.springframework.kafka.support.serializer.JsonSerializer
 
   log-service:
     build: ./backend/log-service
     container_name: log-service
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      DB_URL: ${LOG_DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
-      - log-postgres
+      - log_postgres
       - kafka
+    environment:
+      SERVER_PORT: 8082
 
-  postgres:
+      SPRING_DATASOURCE_URL: ${LOG_DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: true
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+      SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER: org.springframework.kafka.support.serializer.JsonDeserializer
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_VALUE_DEFAULT_TYPE: com.project.log.dto.event.LogEventDto
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "*"
+      SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET: earliest
+
+      SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
+      SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.springframework.kafka.support.serializer.JsonSerializer
+      SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_HEADERS: "false"
+
+  auth_postgres:
     image: postgres:15
     container_name: auth_postgres
     restart: always
@@ -69,29 +118,29 @@ services:
     volumes:
       - ./data/auth-postgres:/var/lib/postgresql/data
 
-  doc-postgres:
+  doc_postgres:
     image: postgres:15
     container_name: doc_postgres
     restart: always
-    ports:
-      - "5433:5432"
     environment:
       POSTGRES_DB: ${DOC_DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5433:5432"
     volumes:
       - ./data/doc-postgres:/var/lib/postgresql/data
 
-  log-postgres:
+  log_postgres:
     image: postgres:15
     container_name: log_postgres
     restart: always
-    ports:
-      - "5434:5432"
     environment:
       POSTGRES_DB: ${LOG_DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5434:5432"
     volumes:
       - ./data/log-postgres:/var/lib/postgresql/data
 
@@ -139,7 +188,6 @@ services:
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
 
