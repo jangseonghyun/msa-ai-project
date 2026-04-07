@@ -5,7 +5,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="brand">
         <div className="brand__logo">1</div>
-        <div className="brand__title">AI Document Search</div>
+        <div className="brand__title">AI Document Search2</div>
       </div>
 
       <nav className="menu">
