@@ -42,17 +42,25 @@ pipeline {
               }
 
             } else {
-              echo ">>> Skipping ${svc} (no gradlew)"
+              echo ">>> Skipping ${svc}"
             }
           }
         }
       }
     }
 
+    stage('Inject Env') {
+      steps {
+        sh '''
+        cp /home/tmd2052/02_msa-ai-project/.env $WORKSPACE/.env
+        '''
+      }
+    }
+
     stage('Deploy') {
       steps {
         sh '''
-        cd /home/tmd2052/02_msa-ai-project
+        cd $WORKSPACE
         docker-compose down
         docker-compose up -d --build
         '''
