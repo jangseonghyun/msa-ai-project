@@ -4,15 +4,14 @@ pipeline {
   stages {
 
     stage('Frontend Build') {
-      agent {
-        docker {
-          image 'node:24'
-        }
-      }
       steps {
-        dir('frontend/react') {
-          sh 'npm install'
-          sh 'npm run build'
+        dir('frontend') {
+          script {
+            docker.image('node:24').inside {
+              sh 'npm install'
+              sh 'npm run build'
+            }
+          }
         }
       }
     }
@@ -47,6 +46,16 @@ pipeline {
             }
           }
         }
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        sh '''
+        cd /home/tmd2052/02_msa-ai-project
+        docker-compose down
+        docker-compose up -d --build
+        '''
       }
     }
 
