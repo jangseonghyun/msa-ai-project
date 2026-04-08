@@ -37,7 +37,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         for (String origin : allowedOrigins.split(",")) {
-            config.addAllowedOrigin(origin.trim());
+            config.addAllowedOriginPattern(origin.trim());
         }
 
         config.addAllowedMethod("*");
