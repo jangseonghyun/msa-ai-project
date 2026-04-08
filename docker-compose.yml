@@ -9,12 +9,13 @@ services:
       - "9000:80"
     depends_on:
       - gateway-service
+    restart: always
 
   gateway-service:
     build: ./backend/gateway-service
     container_name: gateway-service
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     environment:
       SERVER_PORT: 8000
 
@@ -35,6 +36,7 @@ services:
       - auth-service
       - doc-service
       - log-service
+    restart: always
 
   auth-service:
     build: ./backend/auth-service
@@ -42,6 +44,8 @@ services:
     depends_on:
       - auth_postgres
       - kafka
+    expose:
+      - "8080"
     environment:
       SERVER_PORT: 8080
 
@@ -57,6 +61,7 @@ services:
       SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_HEADERS: "false"
       SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
       SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.springframework.kafka.support.serializer.JsonSerializer
+    restart: always
 
   doc-service:
     build: ./backend/doc-service
@@ -64,6 +69,8 @@ services:
     depends_on:
       - doc_postgres
       - kafka
+    expose:
+      - "8081"
     environment:
       SERVER_PORT: 8081
 
@@ -79,6 +86,7 @@ services:
       SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_HEADERS: "false"
       SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
       SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.springframework.kafka.support.serializer.JsonSerializer
+    restart: always
 
   log-service:
     build: ./backend/log-service
@@ -86,6 +94,8 @@ services:
     depends_on:
       - log_postgres
       - kafka
+    expose:
+      - "8082"
     environment:
       SERVER_PORT: 8082
 
@@ -106,6 +116,7 @@ services:
       SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
       SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.springframework.kafka.support.serializer.JsonSerializer
       SPRING_KAFKA_PRODUCER_PROPERTIES_SPRING_JSON_ADD_TYPE_HEADERS: "false"
+    restart: always
 
   auth_postgres:
     image: postgres:15
@@ -151,6 +162,7 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
+    restart: always
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
@@ -163,6 +175,7 @@ services:
       - "9200:9200"
     volumes:
       - ./data/elasticsearch:/usr/share/elasticsearch/data
+    restart: always
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.12.0
@@ -173,6 +186,7 @@ services:
       - "5601:5601"
     environment:
       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    restart: always
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.12.0
@@ -184,6 +198,7 @@ services:
       - "9600:9600"
     volumes:
       - ./logstash:/usr/share/logstash/pipeline
+    restart: always
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -192,6 +207,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
     ports:
       - "2181:2181"
+    restart: always
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -209,6 +225,7 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    restart: always
 
   ollama:
     image: ollama/ollama
@@ -217,3 +234,4 @@ services:
       - "11434:11434"
     volumes:
       - ./data/ollama:/root/.ollama
+    restart: always
