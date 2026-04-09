@@ -13,7 +13,7 @@ public class LogConsumer {
 
     private final LogRepository logRepository;
 
-    @KafkaListener(topics = "log-topic", groupId ="log-group")
+    @KafkaListener(topics = "log-topic")
     public void consume(LogEventDto dto) throws Exception {
 
         LogEntity entity = new LogEntity();
