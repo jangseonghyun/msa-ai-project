@@ -165,7 +165,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./data/auth-postgres:/var/lib/postgresql/data
+      - /home/tmd2052/data/auth-postgres:/var/lib/postgresql/data
 
   doc_postgres:
     image: postgres:15
@@ -178,7 +178,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - ./data/doc-postgres:/var/lib/postgresql/data
+      - /home/tmd2052/data/doc-postgres:/var/lib/postgresql/data
 
   log_postgres:
     image: postgres:15
@@ -191,10 +191,10 @@ services:
     ports:
       - "5434:5432"
     volumes:
-      - ./data/log-postgres:/var/lib/postgresql/data
+      - /home/tmd2052/data/log-postgres:/var/lib/postgresql/data
 
   ai_postgres:
-    image: postgres:15
+    image: ankane/pgvector
     container_name: ai_postgres
     restart: always
     environment:
@@ -204,7 +204,7 @@ services:
     ports:
       - "5435:5432"
     volumes:
-      - ./data/ai-postgres:/var/lib/postgresql/data
+      - /home/tmd2052/data/ai-postgres:/var/lib/postgresql/data
 
   redis:
     image: redis:7
@@ -282,5 +282,5 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      - ./data/ollama:/root/.ollama
+      - /home/tmd2052/data/ollama:/root/.ollama
     restart: always
