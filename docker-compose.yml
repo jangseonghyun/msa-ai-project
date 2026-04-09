@@ -223,7 +223,7 @@ services:
     ports:
       - "9200:9200"
     volumes:
-      - ./data/elasticsearch:/usr/share/elasticsearch/data
+      - /home/tmd2052/data/elasticsearch:/usr/share/elasticsearch/data
     restart: always
 
   kibana:
