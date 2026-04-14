@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class JwtGlobalFilter implements GlobalFilter {
+public class JwtGlobalFilter implements GlobalFilter, Ordered {
 
     private final SecretKey SECRET = Keys.hmacShaKeyFor(
             "my-secret-key-my-secret-key-123456".getBytes(StandardCharsets.UTF_8)
@@ -24,19 +25,32 @@ public class JwtGlobalFilter implements GlobalFilter {
                              org.springframework.cloud.gateway.filter.GatewayFilterChain chain) {
 
         String method = exchange.getRequest().getMethod().name();
+        String path = exchange.getRequest().getURI().getPath();
 
-        // OPTIONS 무조건 통과
+        // 1. OPTIONS 무조건 통과
         if ("OPTIONS".equals(method)) {
             return chain.filter(exchange);
         }
 
-        String path = exchange.getRequest().getURI().getPath();
-
-        // 인증 제외
-        if (path.startsWith("/auth")) {
+        // 2. 인증 제외 (/auth → 로그인, 회원가입)
+        if (path.startsWith("/api/auth")) {
             return chain.filter(exchange);
         }
 
+        // 3. internal → 헤더만 체크
+        if (path.startsWith("/internal")) {
+
+            String internalHeader = exchange.getRequest().getHeaders().getFirst("X-INTERNAL-CALL");
+
+            if (!"true".equals(internalHeader)) {
+                exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                return exchange.getResponse().setComplete();
+            }
+
+            return chain.filter(exchange);
+        }
+
+        // 4. 나머지 (/api/**) → JWT 검사
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -55,7 +69,7 @@ public class JwtGlobalFilter implements GlobalFilter {
 
             String userId = claims.getSubject();
 
-            // 헤더에 사용자 정보 전달
+            // 사용자 정보 전달
             exchange = exchange.mutate()
                     .request(r -> r.header("X-User-Id", userId))
                     .build();
@@ -66,5 +80,10 @@ public class JwtGlobalFilter implements GlobalFilter {
         }
 
         return chain.filter(exchange);
+    }
+
+    @Override
+    public int getOrder() {
+        return -1;
     }
 }
