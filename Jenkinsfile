@@ -16,6 +16,16 @@ pipeline {
       }
     }
 
+    stage('Copy Frontend to Host') {
+        steps {
+            sh '''
+            rm -rf /home/tmd2052/02_msa-ai-project/frontend/dist
+            mkdir -p /home/tmd2052/02_msa-ai-project/frontend
+            cp -r $WORKSPACE/frontend/dist /home/tmd2052/02_msa-ai-project/frontend
+            '''
+        }
+    }
+
     stage('Backend Build') {
       steps {
         script {
@@ -49,20 +59,14 @@ pipeline {
       }
     }
 
-    stage('Inject Env') {
-      steps {
-        sh '''
-        cp /home/tmd2052/02_msa-ai-project/.env $WORKSPACE/.env
-        '''
-      }
-    }
-
     stage('Deploy') {
       steps {
         sh '''
-        cd $WORKSPACE
-        docker-compose down
-        docker-compose up -d --build
+        ssh tmd2052@localhost "
+          cd /home/tmd2052/02_msa-ai-project &&
+          git pull &&
+          docker-compose up -d --build
+        "
         '''
       }
     }
