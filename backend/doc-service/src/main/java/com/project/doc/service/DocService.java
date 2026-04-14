@@ -1,5 +1,6 @@
 package com.project.doc.service;
 
+import com.project.doc.config.FileProperties;
 import com.project.doc.dto.response.UploadResponse;
 import com.project.doc.entity.Document;
 import com.project.doc.kafka.KafkaProducerService;
@@ -17,8 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DocService {
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final FileProperties fileProperties;
 
     private final DocumentRepository documentRepository;
     private final KafkaProducerService kafkaProducerService;
@@ -49,6 +49,7 @@ public class DocService {
         }
 
         String savedName = UUID.randomUUID() + "_" + originalName;
+        String uploadDir = fileProperties.getUploadDir();
         String filePath = uploadDir + "/" + savedName;
 
         try {
