@@ -1,0 +1,35 @@
+server:
+  port: 8083
+
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5435/ai_postgres
+    username: tmd2052
+    password: tmdgus2052
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  kafka:
+    bootstrap-servers: localhost:29092
+    consumer:
+      group-id: ai-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.project.doc.dto.event.DocEvent
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+ollama:
+  base-url: http://localhost:11434
