@@ -26,6 +26,15 @@ export default function LoginPopup({ onClose }) {
     })
 
     // 2. 함수
+    // INPUT 초기화
+    useEffect(() => {
+        setForm({
+            id: "",
+            pw: ""
+        })
+        setErrors({})
+    }, [mode])
+
     // useEffect는 랜더링 시에 실행되고, [id] 내부의 값 변화를 감지하는 함수이다.
     useEffect(() => {
         const timer = setTimeout(() => {
