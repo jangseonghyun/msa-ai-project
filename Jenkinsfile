@@ -62,11 +62,9 @@ pipeline {
     stage('Deploy') {
       steps {
         sh '''
-        ssh tmd2052@localhost "
           cd /home/tmd2052/02_msa-ai-project &&
           git pull &&
           docker-compose up -d --build
-        "
         '''
       }
     }
