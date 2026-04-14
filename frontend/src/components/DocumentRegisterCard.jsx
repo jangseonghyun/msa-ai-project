@@ -1,28 +1,86 @@
+import { useState } from "react"
+import api from "../api/interceptor";
+import { getAccessToken } from '../api/token'
+
 export default function DocumentRegisterCard() {
-  return (
-    <aside className="panel panel--register">
-      <div className="panel__header panel__header--space">
-        <h3>문서 등록</h3>
-        <button className="panel__more">•••</button>
-      </div>
+    const [title, setTitle] = useState("")
+    const [file, setFile] = useState(null)
 
-      <div className="registerForm">
-        <input className="field" placeholder="문서 제목" />
+    const handleFileChange = (e) => {
+        if (!e.target.files) return
+        setFile(e.target.files[0])
+    }
 
-        <div className="selectField">
-          <span>카테고리</span>
-          <span>▾</span>
-        </div>
+    const handleSubmit = async () => {
+        const token = getAccessToken();
 
-        <textarea className="field field--textarea" placeholder="메모" />
+        if (!token) {
+            alert("로그인이 필요합니다.")
+            return
+        }
 
-        <label className="uploadBox">
-          <input type="file" hidden />
-          <span>파일을 드래그하거나 클릭하여 업로드</span>
-        </label>
+        if (!file) {
+            alert("파일을 선택해주세요.")
+            return
+        }
 
-        <button className="primaryButton">등록</button>
-      </div>
-    </aside>
-  )
+        const allowedExtensions = ["pdf", "docx", "txt"]
+        const ext = file.name.split(".").pop()?.toLowerCase()
+
+        if (!ext || !allowedExtensions.includes(ext)) {
+            alert("PDF, DOCX, TXT 파일만 업로드 가능합니다.")
+            return
+        }
+
+        const formData = new FormData()
+        formData.append("title", title)
+        formData.append("file", file)
+
+        try {
+            await api.post("/doc/upload", formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+
+            alert("업로드 완료")
+            setTitle("")
+            setFile(null)
+        } catch (e) {
+            console.error(e)
+            alert("업로드 실패")
+        }
+    }
+
+    return (
+        <aside className="panel panel--register">
+            <div className="panel__header panel__header--space">
+                <h3>문서 등록</h3>
+                <button className="panel__more">•••</button>
+            </div>
+
+            <div className="registerForm">
+                <input
+                    className="field"
+                    placeholder="문서 제목"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                />
+
+                <div className="selectField">
+                    <span>카테고리</span>
+                    <span>▾</span>
+                </div>
+
+                <label className="uploadBox">
+                    <input type="file" hidden onChange={handleFileChange} />
+                    <span>{file ? file.name : "파일을 드래그하거나 클릭하여 업로드"}</span>
+                </label>
+
+                <button className="primaryButton" onClick={handleSubmit}>
+                    등록
+                </button>
+            </div>
+        </aside>
+    )
 }

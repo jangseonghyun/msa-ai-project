@@ -1,17 +1,28 @@
 package com.project.doc.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.project.doc.dto.response.UploadResponse;
+import com.project.doc.service.DocService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/doc")
+@RequiredArgsConstructor
 public class DocController {
 
-    @GetMapping("/welcome")
-    public String welcome() {
+    private final DocService docService;
 
-        return "welcome";
+    @PostMapping("/upload")
+    public ResponseEntity<UploadResponse> upload(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("title") String title
+    ) {
+
+        UploadResponse result = docService.upload(file, title, userId);
+
+        return ResponseEntity.ok(result);
     }
-
 }
