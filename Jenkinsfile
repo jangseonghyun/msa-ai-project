@@ -30,6 +30,8 @@ pipeline {
       steps {
         script {
           def services = [
+            'discovery-server',
+            'config-server',
             'auth-service',
             'doc-service',
             'log-service',
