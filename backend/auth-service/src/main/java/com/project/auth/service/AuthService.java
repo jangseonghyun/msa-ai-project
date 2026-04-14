@@ -94,7 +94,7 @@ public class AuthService {
 
         String accessToken = jwtProvider.createAccessToken(user);
         String refreshToken = jwtProvider.createRefreshToken(user);
-        Date refreshExpiredAt = new Date(System.currentTimeMillis() + 1000L * 60);
+        Date refreshExpiredAt = new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 7); // 7일
 
         authTokenRepository.save(
                 new AuthToken(user.getUid(), refreshToken, refreshExpiredAt)
