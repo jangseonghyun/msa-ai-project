@@ -62,6 +62,7 @@ pipeline {
     stage('Deploy') {
       steps {
         sh '''
+          git config --global --add safe.directory /home/tmd2052/02_msa-ai-project
           cd /home/tmd2052/02_msa-ai-project &&
           git pull &&
           docker-compose up -d --build
