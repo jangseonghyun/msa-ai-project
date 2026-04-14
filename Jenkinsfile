@@ -119,6 +119,9 @@ pipeline {
         sh '''
           git config --global --add safe.directory /home/tmd2052/02_msa-ai-project
           cd /home/tmd2052/02_msa-ai-project
+
+          docker-compose down
+
           git pull
           docker-compose up -d --build
         '''
