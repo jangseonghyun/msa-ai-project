@@ -1,21 +1,6 @@
-server:
-  port: 8081
-
 spring:
   application:
     name: doc-service
 
-  profiles:
-    active: local
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-
-  kafka:
-    producer:
-      properties:
-        spring.json.add.type.headers: false
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
