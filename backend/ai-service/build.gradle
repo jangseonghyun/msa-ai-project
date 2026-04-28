@@ -42,10 +42,14 @@ dependencies {
 	// 파일 처리 (AI)
 	implementation 'org.apache.tika:tika-core:2.9.2'
 	implementation 'org.apache.tika:tika-parsers-standard-package:2.9.2'
+	
 
 	// lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// kafka
+	implementation 'org.springframework.kafka:spring-kafka'
 
 	// test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
