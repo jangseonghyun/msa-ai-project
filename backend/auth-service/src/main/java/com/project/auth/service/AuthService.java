@@ -7,7 +7,7 @@ import com.project.auth.dto.response.MeResponse;
 import com.project.auth.entity.AuthToken;
 import com.project.auth.entity.User;
 import com.project.auth.exception.AuthException;
-import com.project.auth.kafka.KafkaProducerService;
+import com.project.auth.kafka.AuthProducer;
 import com.project.auth.repository.AuthTokenRepository;
 import com.project.auth.repository.UserRepository;
 import com.project.auth.security.JwtProvider;
@@ -24,14 +24,14 @@ public class AuthService {
     private final AuthTokenRepository authTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
-    private final KafkaProducerService kafkaProducerService;
+    private final AuthProducer authProducer;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider, AuthTokenRepository authTokenRepository, KafkaProducerService kafkaProducerService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider, AuthTokenRepository authTokenRepository, AuthProducer authProducer) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
         this.authTokenRepository = authTokenRepository;
-        this.kafkaProducerService = kafkaProducerService;
+        this.authProducer = authProducer;
     }
 
     public boolean isDuplicate(String userId) {
@@ -54,19 +54,19 @@ public class AuthService {
         try {
             userRepository.save(user);
 
-            kafkaProducerService.send(
+            authProducer.send(
                     new AuthEvent("auth-service", AuthEventType.SIGNUP_SUCCESS.name(), request.getId(), AuthEventType.SIGNUP_SUCCESS.getDescription())
             );
 
             return true;
         } catch(DataIntegrityViolationException e) {
-            kafkaProducerService.send(
+            authProducer.send(
                     new AuthEvent("auth-service", AuthEventType.SIGNUP_FAIL.name(), request.getId(), AuthEventType.SIGNUP_FAIL.getDescription())
             );
 
             return false;
         } catch(Exception e) {
-            kafkaProducerService.send(
+            authProducer.send(
                     new AuthEvent("auth-service", AuthEventType.SIGNUP_FAIL.name(), request.getId(), AuthEventType.SIGNUP_FAIL.getDescription())
             );
 
@@ -111,7 +111,7 @@ public class AuthService {
 
         String userId = jwtProvider.getUserId(accessToken);
 
-        User user = userRepository.findByUserId(userId)
+        User user = userRepository.findByUid(Long.parseLong(userId))
                 .orElseThrow(() -> new AuthException("유저 없음", 404));
 
         return new MeResponse(user.getUserId());

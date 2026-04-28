@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class KafkaProducerService {
+public class AuthProducer {
 
     private final KafkaTemplate<String, AuthEvent> kafkaTemplate;
 
