@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "doc_document")
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,6 +32,12 @@ public class Document {
 
     @Column(length = 20)
     private String status;
+
+    @Column(columnDefinition = "TEXT")
+    private String content;
+
+    @Column(columnDefinition = "TEXT")
+    private String summary;
 
     @Column(name = "created_by")
     private Long createdBy;

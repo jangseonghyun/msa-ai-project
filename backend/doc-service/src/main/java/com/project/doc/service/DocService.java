@@ -3,10 +3,9 @@ package com.project.doc.service;
 import com.project.doc.config.FileProperties;
 import com.project.doc.dto.response.UploadResponse;
 import com.project.doc.entity.Document;
-import com.project.doc.kafka.KafkaProducerService;
-import com.project.doc.repository.DocumentRepository;
+import com.project.doc.kafka.DocEventProducer;
+import com.project.doc.repository.DocRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,13 +19,13 @@ public class DocService {
 
     private final FileProperties fileProperties;
 
-    private final DocumentRepository documentRepository;
-    private final KafkaProducerService kafkaProducerService;
+    private final DocRepository documentRepository;
+    private final DocEventProducer docProducerService;
 
-    public UploadResponse upload(MultipartFile file, String title, Long userId) {
+    public UploadResponse upload(MultipartFile file, String title, String uid) {
 
         // 1. 인증 체크
-        if (userId == null) {
+        if (uid == null) {
             return new UploadResponse(false, "인증 정보가 없습니다.", null);
         }
 
@@ -70,14 +69,14 @@ public class DocService {
                 .filePath(filePath)
                 .fileSize(file.getSize())
                 .status("PARSED")
-                .createdBy(userId)
+                .createdBy(Long.parseLong(uid))
                 .createdAt(LocalDateTime.now())
                 .build();
 
         documentRepository.save(doc);
 
         // 6. Kafka
-        kafkaProducerService.send(doc);
+        docProducerService.send(doc);
 
         return new UploadResponse(true, "업로드 성공", doc.getId());
     }

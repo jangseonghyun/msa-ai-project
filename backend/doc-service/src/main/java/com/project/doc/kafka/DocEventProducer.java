@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class KafkaProducerService {
+public class DocEventProducer {
 
     private final KafkaTemplate<String, Document> kafkaTemplate;
 
-    private static final String TOPIC = "doc-topic";
+    private static final String TOPIC = "ai-topic";
 
     public void send(Document doc) {
         kafkaTemplate.send(TOPIC, doc.getId().toString(), doc);
