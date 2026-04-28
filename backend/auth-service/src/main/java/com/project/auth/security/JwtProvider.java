@@ -20,7 +20,7 @@ public class JwtProvider {
 
     public String createAccessToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getUserId())
+                .setSubject(String.valueOf(user.getUid()))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessExpire))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -29,7 +29,7 @@ public class JwtProvider {
 
     public String createRefreshToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getUserId())
+                .setSubject(String.valueOf(user.getUid()))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + refreshExpire))
                 .signWith(key, SignatureAlgorithm.HS256)
