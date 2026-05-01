@@ -10,12 +10,13 @@ public interface AiVectorRepository extends JpaRepository<AiVector, Long> {
 
     @Modifying
     @Query(value = """
-    INSERT INTO ai_vector (source_type, source_id, chunk, embedding)
-    VALUES (:sourceType, :sourceId, :chunk, CAST(:embedding AS vector))
+    INSERT INTO ai_vector (source_type, source_id, chunk_index, chunk, embedding)
+    VALUES (:sourceType, :sourceId, :chunkIndex, :chunk, CAST(:embedding AS vector))
 """, nativeQuery = true)
     void insertVector(
             @Param("sourceType") String sourceType,
             @Param("sourceId") Long sourceId,
+            @Param("chunkIndex") Long chunkIndex,
             @Param("chunk") String chunk,
             @Param("embedding") String embedding
     );

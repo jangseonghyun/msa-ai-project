@@ -24,6 +24,9 @@ public class AiVector {
     @Column(name = "source_id")
     private Long sourceId;
 
+    @Column(name = "chunk_index")
+    private Long chunkIndex;
+
     @Column(columnDefinition = "TEXT")
     private String chunk;
 

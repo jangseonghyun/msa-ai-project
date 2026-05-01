@@ -1,16 +1,20 @@
 package com.project.doc.service;
 
 import com.project.doc.config.FileProperties;
+import com.project.doc.dto.response.DocumentListDto;
 import com.project.doc.dto.response.UploadResponse;
 import com.project.doc.entity.Document;
 import com.project.doc.kafka.DocEventProducer;
 import com.project.doc.repository.DocRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -21,6 +25,10 @@ public class DocService {
 
     private final DocRepository documentRepository;
     private final DocEventProducer docProducerService;
+
+    public Page<DocumentListDto> list(Pageable pageable) {
+        return documentRepository.findList(pageable);
+    }
 
     public UploadResponse upload(MultipartFile file, String title, String uid) {
 
@@ -68,7 +76,7 @@ public class DocService {
                 .fileName(originalName)
                 .filePath(filePath)
                 .fileSize(file.getSize())
-                .status("PARSED")
+                .status("REGISTERED")
                 .createdBy(Long.parseLong(uid))
                 .createdAt(LocalDateTime.now())
                 .build();

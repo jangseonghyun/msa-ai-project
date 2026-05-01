@@ -9,11 +9,14 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.web.client.RestTemplate;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.antlr.v4.runtime.misc.Utils.readFile;
 
@@ -70,13 +73,38 @@ public class AiService {
 
     private List<List<Float>> createEmbeddings(List<String> chunks) {
         List<List<Float>> result = new ArrayList<>();
+
         for (String chunk : chunks) {
-            List<Float> vector = new ArrayList<>();
-            for (int i = 0; i < 10; i++) {
-                vector.add((float) Math.random());
+            List<Float> vector = getEmbedding(chunk);
+
+            if (vector.size() != 768) {
+                throw new RuntimeException("embedding dimension 오류: " + vector.size());
             }
+
             result.add(vector);
         }
+
+        return result;
+    }
+
+    private List<Float> getEmbedding(String text) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        String url = "http://localhost:11434/api/embeddings";
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("model", "nomic-embed-text");
+        request.put("prompt", text);
+
+        Map response = restTemplate.postForObject(url, request, Map.class);
+
+        List<Double> embedding = (List<Double>) response.get("embedding");
+
+        List<Float> result = new ArrayList<>();
+        for (Double d : embedding) {
+            result.add(d.floatValue());
+        }
+
         return result;
     }
 
@@ -96,6 +124,7 @@ public class AiService {
             aiVectorRepository.insertVector(
                     "doc-service",
                     docId,
+                    (long) i,
                     chunk,
                     vectorStr
             );
