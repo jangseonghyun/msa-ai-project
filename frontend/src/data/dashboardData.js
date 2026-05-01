@@ -14,27 +14,6 @@ export const stats = [
   { label: '챗 횟수', value: '3,210', icon: '◔', tone: 'blue' }
 ]
 
-export const recentDocuments = [
-  {
-    title: '2024년 4분기 매출 보고서.pdf',
-    date: '2024-12-01',
-    size: '15MB',
-    category: '재무'
-  },
-  {
-    title: '인공지능 기술 동향 분석.docx',
-    date: '2024-11-30',
-    size: '8.3MB',
-    category: '기술'
-  },
-  {
-    title: '고객 상담 가이드라인.pdf',
-    date: '2024-11-29',
-    size: '4.7MB',
-    category: '고객지원'
-  }
-]
-
 export const recentTable = [
   {
     title: '2024년 4분기 매출 보고서.pdf',

@@ -1,8 +1,12 @@
 import { useState } from "react"
-import api from "../api/interceptor";
 import { getAccessToken } from '../api/token'
+import { useAlert } from "../context/CustomAlert"
+import api from "../api/interceptor";
 
 export default function DocumentRegisterCard() {
+
+    const { showAlert } = useAlert();
+
     const [title, setTitle] = useState("")
     const [file, setFile] = useState(null)
 
@@ -15,12 +19,12 @@ export default function DocumentRegisterCard() {
         const token = getAccessToken();
 
         if (!token) {
-            alert("로그인이 필요합니다.")
+            showAlert("로그인이 필요합니다.")
             return
         }
 
         if (!file) {
-            alert("파일을 선택해주세요.")
+            showAlert("파일을 선택해주세요.")
             return
         }
 
@@ -28,7 +32,7 @@ export default function DocumentRegisterCard() {
         const ext = file.name.split(".").pop()?.toLowerCase()
 
         if (!ext || !allowedExtensions.includes(ext)) {
-            alert("PDF, DOCX, TXT 파일만 업로드 가능합니다.")
+            showAlert("PDF, DOCX, TXT 파일만 업로드 가능합니다.")
             return
         }
 
@@ -43,12 +47,12 @@ export default function DocumentRegisterCard() {
                 },
             })
 
-            alert("업로드 완료")
+            showAlert("업로드 완료")
             setTitle("")
             setFile(null)
         } catch (e) {
             console.error(e)
-            alert("업로드 실패")
+            showAlert("업로드 실패")
         }
     }
 

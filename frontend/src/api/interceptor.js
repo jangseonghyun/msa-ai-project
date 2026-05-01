@@ -13,38 +13,48 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (res) => res,
-  async (err) => {
-    const originalRequest = err.config;
+    (res) => res,
+    async (err) => {
+        const originalRequest = err.config;
 
-    // refresh 요청이면 재시도 금지
-    if (originalRequest.url.includes("/auth/refresh")) {
-      return Promise.reject(err);
+        // refresh 요청이면 재시도 금지
+        if (originalRequest.url.includes("/auth/refresh")) {
+            return Promise.reject(err);
+        }
+
+        // 서버 재시작 대응
+        if (err.code === "ERR_NETWORK" && !originalRequest._retry) {
+            originalRequest._retry = true;
+
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(api(originalRequest));
+                }, 1000); // 서버 뜰 시간 조금 줌
+            });
+        }
+
+        // 기존 401 처리
+        if (err.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+
+            try {
+                const res = await api.post("/auth/refresh");
+
+                setAccessToken(res.data.accessToken);
+
+                originalRequest.headers.Authorization = res.data.accessToken;
+
+                return api(originalRequest);
+            } catch (e) {
+                const logout = getLogoutHandler();
+                if (logout) logout();
+
+                return Promise.reject(e);
+            }
+        }
+
+        return Promise.reject(err);
     }
-
-    if (err.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const res = await api.post("/auth/refresh");
-
-        setAccessToken(res.data.accessToken);
-
-        originalRequest.headers.Authorization = res.data.accessToken;
-
-        return api(originalRequest);
-      } catch (e) {
-               
-        const logout = getLogoutHandler();
-
-        if(logout) logout();
-
-        return Promise.reject(e);
-      }
-    }
-
-    return Promise.reject(err);
-  }
 );
 
 export default api;
