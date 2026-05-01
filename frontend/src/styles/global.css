@@ -143,6 +143,7 @@ textarea {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
 }
 
 .topbar {
@@ -212,7 +213,10 @@ textarea {
 
 .dashboardPage {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: 34px 42px 38px;
+  min-height: 0;
 }
 
 .pageHeader {
@@ -285,15 +289,22 @@ textarea {
 }
 
 .contentGrid {
+  flex: 1;
   display: grid;
   grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr);
   gap: 24px;
+  align-items: stretch;
+  min-height: 0; /* ⭐ 중요 */
 }
 
 .contentGrid__left {
+  height: 100%;
+}
+
+.panel--table {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
 }
 
 .panel {
@@ -301,6 +312,9 @@ textarea {
   border: 1px solid rgba(200, 207, 218, 0.6);
   border-radius: 18px;
   box-shadow: 0 8px 26px rgba(31, 50, 82, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .panel__header {
@@ -457,6 +471,8 @@ textarea {
 
 .tableWrap {
   padding: 0 18px 18px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .tableHead,
