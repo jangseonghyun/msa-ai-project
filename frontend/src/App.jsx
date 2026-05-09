@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
 import StatsRow from './components/StatsRow'
@@ -10,36 +10,56 @@ import { AlertProvider } from "./context/CustomAlert";
 import "./api/interceptor";
 
 export default function App() {
+
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
+  const recentTableRef = useRef(null)
+
   return (
-    <AuthProvider>
-      <AlertProvider>
-        <div className="appShell">
-          <Sidebar />
+      <AuthProvider>
 
-          <div className="appMain">
-            <Topbar onLoginClick={() => setIsLoginOpen(true)} />
+        <AlertProvider>
 
-            <main className="dashboardPage">
+          <div className="appShell">
 
-              <StatsRow />
+            <Sidebar />
 
-              <div className="contentGrid">
-                <div className="contentGrid__left">
-                  <RecentTableCard />
+            <div className="appMain">
+
+              <Topbar onLoginClick={() => setIsLoginOpen(true)} />
+
+              <main className="dashboardPage">
+
+                <StatsRow />
+
+                <div className="contentGrid">
+
+                  <div className="contentGrid__left">
+
+                    <RecentTableCard ref={recentTableRef} />
+
+                  </div>
+
+                  <DocumentRegisterCard
+                      onUploadSuccess={() => {
+                        recentTableRef.current?.fetchDocs(1)
+                      }}
+                  />
+
                 </div>
 
-                <DocumentRegisterCard />
-              </div>
-            </main>
+              </main>
+
+            </div>
+
+            {isLoginOpen && (
+                <LoginPopup onClose={() => setIsLoginOpen(false)} />
+            )}
+
           </div>
 
-          {isLoginOpen && (
-            <LoginPopup onClose={() => setIsLoginOpen(false)} />
-          )}
-        </div>
-      </AlertProvider>
-    </AuthProvider>
+        </AlertProvider>
+
+      </AuthProvider>
   )
 }

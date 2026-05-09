@@ -3,7 +3,7 @@ import { getAccessToken } from '../api/token'
 import { useAlert } from "../context/CustomAlert"
 import api from "../api/interceptor";
 
-export default function DocumentRegisterCard() {
+export default function DocumentRegisterCard({ onUploadSuccess }) {
 
     const { showAlert } = useAlert();
 
@@ -47,9 +47,13 @@ export default function DocumentRegisterCard() {
                 },
             })
 
-            showAlert("업로드 완료")
+            showAlert("문서 업로드 완료. 요약 진행중.")
+
+            onUploadSuccess?.()
+
             setTitle("")
             setFile(null)
+
         } catch (e) {
             console.error(e)
             showAlert("업로드 실패")
@@ -73,7 +77,11 @@ export default function DocumentRegisterCard() {
 
                 <label className="uploadBox">
                     <input type="file" hidden onChange={handleFileChange} />
-                    <span>{file ? file.name : "파일을 드래그하거나 클릭하여 업로드"}</span>
+                    <span>
+                        {file
+                            ? file.name
+                            : "파일을 드래그하거나 클릭하여 업로드"}
+                    </span>
                 </label>
 
                 <button className="primaryButton" onClick={handleSubmit}>
