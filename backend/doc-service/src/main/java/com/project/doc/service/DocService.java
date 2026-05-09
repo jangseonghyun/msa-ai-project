@@ -76,7 +76,7 @@ public class DocService {
                 .fileName(originalName)
                 .filePath(filePath)
                 .fileSize(file.getSize())
-                .status("REGISTERED")
+                .status("PROCCESSING")
                 .createdBy(Long.parseLong(uid))
                 .createdAt(LocalDateTime.now())
                 .build();

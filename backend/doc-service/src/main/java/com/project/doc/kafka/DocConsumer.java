@@ -26,6 +26,7 @@ public class DocConsumer {
         entity.setId(docId);
         entity.setContent(content);
         entity.setSummary(summary);
+        entity.setStatus("COMPLETE");
 
         docRepository.save(entity);
     }

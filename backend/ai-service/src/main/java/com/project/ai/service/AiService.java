@@ -40,9 +40,15 @@ public class AiService {
         String filePath = dto.getFilePath();
 
         String content = readFile(filePath);
+
+        // 요약 처리
         String summary = summarize(content);
+
         List<String> chunks = chunkText(content, 500);
+
+        // 임베딩 처리
         List<List<Float>> embeddings = createEmbeddings(chunks);
+
         saveVectorDB(docId, chunks, embeddings);
 
         AiResultDto result = new AiResultDto(docId, content, summary);
@@ -58,8 +64,66 @@ public class AiService {
     }
 
     private String summarize(String content) {
-        if (content.length() <= 300) return content;
-        return content.substring(0, 300);
+        RestTemplate restTemplate = new RestTemplate();
+
+        String url = "http://localhost:11434/api/generate";
+
+        String prompt = """
+        당신은 문서 분석 AI입니다.
+
+        입력된 텍스트를 분석하여 아래 규칙에 따라 응답하세요.
+
+        규칙:
+        1. 먼저 문서 유형을 판단하세요.
+          - 노래 가사
+          - 국가(國歌)
+          - 기사
+          - 기술 문서
+          - 소설
+          - 시
+          - 계약서
+          - 일반 설명문
+          등을 구분하세요.
+
+       2. 입력 내용이 유명한 노래, 국가, 시, 소설,
+          문학 작품, 역사적으로 알려진 문서라면
+          단순 요약하지 말고 아래 정보를 자연스럽게 설명하세요.
+          - 작품명 또는 제목
+          - 작가 / 작사 / 작곡가
+          - 작품 특징 또는 시대적 배경
+          - 어떤 작품인지에 대한 설명
+
+       3. 특히 노래나 국가(國歌)라면
+          아래 정보를 우선적으로 포함하세요.
+          - 제목
+          - 가수 또는 국가명
+          - 작사/작곡가
+          - 어떤 노래인지 설명
+
+       4. 입력 내용이 일반 문서라면
+          핵심만 2~3문장으로 자연스럽게 요약하세요.
+
+       5. 입력 내용이 일부만 주어졌더라도
+          유명 작품으로 판단 가능하면
+          작품 정보를 설명하세요.
+
+       6. 불필요한 목록, 제목, Markdown,
+          특수기호 사용 없이 자연스러운 문장 형태로만 작성하세요.
+
+       7. 반드시 한국어로만 응답하세요.
+
+        입력 내용:
+        %s
+        """.formatted(content);
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("model", "llama3");
+        request.put("prompt", prompt);
+        request.put("stream", false);
+
+        Map response = restTemplate.postForObject(url, request, Map.class);
+
+        return (String) response.get("response");
     }
 
     private List<String> chunkText(String text, int size) {
