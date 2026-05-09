@@ -22,9 +22,6 @@ export default function App() {
             <Topbar onLoginClick={() => setIsLoginOpen(true)} />
 
             <main className="dashboardPage">
-              <div className="pageHeader">
-                <h1>Dashboard</h1>
-              </div>
 
               <StatsRow />
 

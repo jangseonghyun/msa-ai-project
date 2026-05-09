@@ -71,11 +71,6 @@ export default function DocumentRegisterCard() {
                     onChange={(e) => setTitle(e.target.value)}
                 />
 
-                <div className="selectField">
-                    <span>카테고리</span>
-                    <span>▾</span>
-                </div>
-
                 <label className="uploadBox">
                     <input type="file" hidden onChange={handleFileChange} />
                     <span>{file ? file.name : "파일을 드래그하거나 클릭하여 업로드"}</span>

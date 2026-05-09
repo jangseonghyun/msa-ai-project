@@ -1,5 +1,4 @@
 import '../styles/recentTable.css'
-import { recentTable } from '../data/dashboardData'
 import { useState, useEffect } from "react";
 import api from "../api/api";
 
@@ -37,7 +36,7 @@ export default function RecentTableCard() {
   return (
     <section className="panel panel--table">
       <div className="panel__header panel__header--space">
-        <h3>최근 등록 문서</h3>
+        <h3>등록 문서</h3>
         <button className="panel__more">•••</button>
       </div>
 
@@ -58,7 +57,7 @@ export default function RecentTableCard() {
               </div>
             </div>
             <div>{row.status}</div>
-            <div className="tableDate">{row.createdAt}</div>
+            <div className="tableDate">{row.createdAt.replace('T', ' ').slice(0, 16)}</div>
           </div>
         ))}
       </div>
