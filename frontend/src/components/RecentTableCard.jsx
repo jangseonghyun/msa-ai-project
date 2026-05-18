@@ -1,10 +1,9 @@
 import '../styles/recentTable.css'
-import {
-    useState,
-    useEffect,
-    forwardRef,
-    useImperativeHandle
-} from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import SockJS from 'sockjs-client'
+import { Client } from '@stomp/stompjs'
+import { useAlert } from "../context/CustomAlert"
+import { useAuth } from "../context/AuthContext";
 
 import api from "../api/api";
 
@@ -12,17 +11,82 @@ const PAGE_SIZE = 5;
 
 const RecentTableCard = forwardRef((props, ref) => {
 
+    const { user } = useAuth();
+
     const [docList, setDocList] = useState([]);
     const [page, setPage] = useState(1)
     const [totalPages, setTotalPages] = useState(0);
+
+    const { showAlert } = useAlert();
+
+    useEffect(() => {
+
+        if (!user) {
+            setDocList([])
+            setPage(1)
+            setTotalPages(0)
+
+            return;
+        }
+
+        fetchDocs(1);
+    }, [user])
 
     useEffect(() => {
         fetchDocs(page)
     }, [page])
 
+    useEffect(() => {
+
+        const socket = new SockJS("http://localhost:8081/ws")
+
+        const stompClient = new Client({
+            webSocketFactory: () => socket,
+            reconnectDelay: 5000,
+            onConnect: () => {
+                stompClient.subscribe("/topic/document", (message) => {
+
+                    console.log("document event", message.body)
+
+                    const data = JSON.parse(message.body);
+
+                    setDocList(prev => {
+
+                        return prev.map(row => {
+
+                            if(row.id === data.docId) {
+
+                                return {
+                                    ...row,
+                                    category: data.category,
+                                    status: data.status
+                                }
+                            }
+
+                            return row
+                        })
+                    })
+                    showAlert("AI 분석 완료");
+                })
+            },
+
+            onStompError: (frame) => {
+                console.error(frame)
+            }
+        })
+
+        stompClient.activate()
+
+        return () => {
+            stompClient.deactivate()
+        }
+
+    }, [])
+
     const fetchDocs = async (targetPage = page) => {
 
         try {
+
             const res = await api.get("/doc/list", {
                 params: {
                     page: targetPage - 1,
@@ -64,9 +128,13 @@ const RecentTableCard = forwardRef((props, ref) => {
                     <div key={row.id} className="tableRow">
 
                         <div className="tableTitleCell">
-                            <span className="tableFileIcon">▤</span>
+
+                            <span className="tableFileIcon">
+                                ▤
+                            </span>
 
                             <div>
+
                                 <div className="tableTitle">
                                     {row.title}
                                 </div>
@@ -74,21 +142,30 @@ const RecentTableCard = forwardRef((props, ref) => {
                                 <div className="tableSub">
                                     {row.fileSize}KB
                                 </div>
+
                             </div>
+
                         </div>
 
-                        <div>{row.category}</div>
+                        <div className="tablecategory">
+                            {row.category}
+                        </div>
 
-                        <div>{row.status}</div>
+                        <div className="tableStatus">
+                            {row.status}
+                        </div>
 
                         <div className="tableDate">
+
                             {row.createdAt
                                 ?.replace('T', ' ')
                                 ?.slice(0, 16)}
+
                         </div>
 
                     </div>
                 ))}
+
             </div>
 
             <div className="pagination">
@@ -112,6 +189,7 @@ const RecentTableCard = forwardRef((props, ref) => {
                 </button>
 
             </div>
+
         </section>
     )
 })

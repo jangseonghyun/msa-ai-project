@@ -11,55 +11,55 @@ import "./api/interceptor";
 
 export default function App() {
 
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+    const [isLoginOpen, setIsLoginOpen] = useState(false);
 
-  const recentTableRef = useRef(null)
+    const recentTableRef = useRef(null)
 
-  return (
-      <AuthProvider>
+    return (
+        <AuthProvider>
 
-        <AlertProvider>
+            <AlertProvider>
 
-          <div className="appShell">
+                <div className="appShell">
 
-            <Sidebar />
+                    <Sidebar />
 
-            <div className="appMain">
+                    <div className="appMain">
 
-              <Topbar onLoginClick={() => setIsLoginOpen(true)} />
+                        <Topbar onLoginClick={() => setIsLoginOpen(true)} />
 
-              <main className="dashboardPage">
+                        <main className="dashboardPage">
 
-                <StatsRow />
+                            <StatsRow />
 
-                <div className="contentGrid">
+                            <div className="contentGrid">
 
-                  <div className="contentGrid__left">
+                                <div className="contentGrid__left">
 
-                    <RecentTableCard ref={recentTableRef} />
+                                    <RecentTableCard ref={recentTableRef} />
 
-                  </div>
+                                </div>
 
-                  <DocumentRegisterCard
-                      onUploadSuccess={() => {
-                        recentTableRef.current?.fetchDocs(1)
-                      }}
-                  />
+                                <DocumentRegisterCard
+                                    onUploadSuccess={() => {
+                                        recentTableRef.current?.fetchDocs(1)
+                                    }}
+                                />
+
+                            </div>
+
+                        </main>
+
+                    </div>
+
+                    {isLoginOpen && (
+                        <LoginPopup onClose={() => setIsLoginOpen(false)} />
+                    )}
 
                 </div>
 
-              </main>
+            </AlertProvider>
 
-            </div>
-
-            {isLoginOpen && (
-                <LoginPopup onClose={() => setIsLoginOpen(false)} />
-            )}
-
-          </div>
-
-        </AlertProvider>
-
-      </AuthProvider>
-  )
+        </AuthProvider>
+    )
 }

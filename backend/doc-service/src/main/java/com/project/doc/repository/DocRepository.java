@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 public interface DocRepository extends JpaRepository<Document, Long> {
-
+                                                                                        
     @Query("""
         SELECT new com.project.doc.dto.response.DocumentListDto(
             d.id,
@@ -18,10 +18,12 @@ public interface DocRepository extends JpaRepository<Document, Long> {
             d.fileSize,
             d.status,
             d.summary,
-            d.createdAt
+            d.createdAt,
+            d.category
         )
         FROM Document d
+        WHERE d.createdBy = :uid        
         ORDER BY d.createdAt DESC
     """)
-    Page<DocumentListDto> findList(Pageable pageable);
+    Page<DocumentListDto> findList(Pageable pageable, Long uid);
 }

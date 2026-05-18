@@ -44,4 +44,8 @@ public class Document {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "category")
+    private String category;
+
 }

@@ -16,4 +16,5 @@ public class DocumentListDto {
     private String status;
     private String summary;
     private LocalDateTime createdAt;
+    private String category;
 }

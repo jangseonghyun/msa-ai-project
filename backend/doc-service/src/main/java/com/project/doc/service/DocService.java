@@ -26,8 +26,8 @@ public class DocService {
     private final DocRepository documentRepository;
     private final DocEventProducer docProducerService;
 
-    public Page<DocumentListDto> list(Pageable pageable) {
-        return documentRepository.findList(pageable);
+    public Page<DocumentListDto> list(Pageable pageable, Long uid) {
+        return documentRepository.findList(pageable, uid);
     }
 
     public UploadResponse upload(MultipartFile file, String title, String uid) {

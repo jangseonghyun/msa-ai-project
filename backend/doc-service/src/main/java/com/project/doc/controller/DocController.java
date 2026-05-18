@@ -20,8 +20,8 @@ public class DocController {
     private final DocService docService;
 
     @GetMapping("/list")
-    public Page<DocumentListDto> list(Pageable pageable) {
-        return docService.list(pageable);
+    public Page<DocumentListDto> list(Pageable pageable, @RequestHeader("X-User-Id") String uid) {
+        return docService.list(pageable, Long.parseLong(uid));
     }
 
     @PostMapping("/upload")
