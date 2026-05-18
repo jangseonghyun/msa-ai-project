@@ -11,4 +11,6 @@ public class AiResultDto {
     private Long docId;
     private String content;
     private String summary;
+    private String category;
+    private String status;
 }

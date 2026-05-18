@@ -20,6 +20,8 @@ public class AiEventProducer {
         data.put("docId", ai.getDocId());
         data.put("content", ai.getContent());
         data.put("summary", ai.getSummary());
+        data.put("category", ai.getCategory());
+        data.put("status", ai.getStatus());
 
         kafkaTemplate.send(topic, key, data);
     }

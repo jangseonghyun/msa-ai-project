@@ -1,5 +1,7 @@
 package com.project.ai.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ai.dto.event.AiResultDto;
 import com.project.ai.dto.request.AiRequestDto;
 import com.project.ai.entity.AiVector;
@@ -25,6 +27,7 @@ public class AiService {
 
     private final AiVectorRepository aiVectorRepository;
     private final AiEventProducer aiEventProducer;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AiService(AiEventProducer aiEventProducer, AiVectorRepository aiVectorRepository) {
         this.aiEventProducer = aiEventProducer;
@@ -39,20 +42,54 @@ public class AiService {
         Long docId = dto.getId();
         String filePath = dto.getFilePath();
 
-        String content = readFile(filePath);
+        try {
 
-        // 요약 처리
-        String summary = summarize(content);
+            String content = readFile(filePath);
 
-        List<String> chunks = chunkText(content, 500);
+            String response = summarize(content);
 
-        // 임베딩 처리
-        List<List<Float>> embeddings = createEmbeddings(chunks);
+            JsonNode node = objectMapper.readTree(response);
 
-        saveVectorDB(docId, chunks, embeddings);
+            String summary = node.get("summary").asText();
+            String category = node.get("category").asText();
 
-        AiResultDto result = new AiResultDto(docId, content, summary);
-        aiEventProducer.send(RESULT_TOPIC, docId.toString(), result);
+            List<String> chunks = chunkText(content, 500);
+
+            List<List<Float>> embeddings = createEmbeddings(chunks);
+            saveVectorDB(docId, chunks, embeddings);
+
+            AiResultDto result = new AiResultDto(
+                    docId,
+                    content,
+                    summary,
+                    category,
+                    "COMPLETE"
+            );
+
+            aiEventProducer.send(
+                    RESULT_TOPIC,
+                    docId.toString(),
+                    result
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            AiResultDto result = new AiResultDto(
+                    docId,
+                    null,
+                    null,
+                    null,
+                    "ERROR"
+            );
+
+            aiEventProducer.send(
+                    RESULT_TOPIC,
+                    docId.toString(),
+                    result
+            );
+        }
     }
 
     private String readFile(String filePath) {
@@ -111,7 +148,13 @@ public class AiService {
           특수기호 사용 없이 자연스러운 문장 형태로만 작성하세요.
 
        7. 반드시 한국어로만 응답하세요.
-
+    
+       응답 예시:
+       {
+            "summary": "...",
+            "category": "TECH"
+       }
+                 
         입력 내용:
         %s
         """.formatted(content);
